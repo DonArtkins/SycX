@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/models/user.dart' as app_user;
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar_mini.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
-import 'package:sycx_flutter_app/widgets/custom_textfield.dart';
-import 'package:sycx_flutter_app/widgets/animated_button.dart';
-import 'package:sycx_flutter_app/utils/pick_image.dart';
-import 'package:sycx_flutter_app/utils/convert_to_base64.dart';
-import 'package:sycx_flutter_app/services/database.dart';
+import 'package:SycX/models/user.dart' as app_user;
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/custom_app_bar_mini.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/widgets/custom_textfield.dart';
+import 'package:SycX/widgets/animated_button.dart';
+import 'package:SycX/utils/pick_image.dart';
+import 'package:SycX/utils/convert_to_base64.dart';
+import 'package:SycX/services/database.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sycx_flutter_app/widgets/loading.dart';
+import 'package:SycX/widgets/loading.dart';
 
 class EditProfile extends StatefulWidget {
   final app_user.User? userData;
@@ -40,7 +40,8 @@ class EditProfileState extends State<EditProfile> {
     super.initState();
     _nameController = TextEditingController(text: widget.userData?.name);
     _emailController = TextEditingController(text: widget.userData?.email);
-    _usernameController = TextEditingController(text: widget.userData?.userName);
+    _usernameController =
+        TextEditingController(text: widget.userData?.userName);
   }
 
   @override

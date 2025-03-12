@@ -5,8 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:sycx_flutter_app/services/database.dart';
-import 'package:sycx_flutter_app/models/user.dart' as app_user;
+import 'package:SycX/services/database.dart';
+import 'package:SycX/models/user.dart' as app_user;
 import 'package:workmanager/workmanager.dart';
 
 class Auth {

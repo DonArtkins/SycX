@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.sycx" "\0"
-            VALUE "FileDescription", "sycx_flutter_app" "\0"
+            VALUE "FileDescription", "SycX" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "com.donartkins.sycx" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.sycx. All rights reserved." "\0"
-            VALUE "OriginalFilename", "sycx_flutter_app.exe" "\0"
-            VALUE "ProductName", "sycx_flutter_app" "\0"
+            VALUE "OriginalFilename", "SycX.exe" "\0"
+            VALUE "ProductName", "SycX" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

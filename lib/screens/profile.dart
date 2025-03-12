@@ -1,15 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/models/user.dart' as app_user;
-import 'package:sycx_flutter_app/services/database.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar_mini.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
-import 'package:sycx_flutter_app/widgets/loading.dart';
-import 'package:sycx_flutter_app/screens/edit_profile.dart';
-import 'package:sycx_flutter_app/screens/account_settings.dart';
-import 'package:sycx_flutter_app/screens/data_access.dart';
-import 'package:sycx_flutter_app/screens/help_center.dart';
+import 'package:SycX/models/user.dart' as app_user;
+import 'package:SycX/services/database.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/custom_app_bar_mini.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/widgets/loading.dart';
+import 'package:SycX/screens/edit_profile.dart';
+import 'package:SycX/screens/account_settings.dart';
+import 'package:SycX/screens/data_access.dart';
+import 'package:SycX/screens/help_center.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -72,18 +72,18 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     return _loading
         ? const Loading()
         : Scaffold(
-      appBar: const CustomAppBarMini(title: 'Profile'),
-      body: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: userData != null ? _buildBody() : _buildNoUserContent(),
-        ),
-      ),
-      bottomNavigationBar: const CustomBottomNavBar(
-        currentRoute: '/profile',
-      ),
-    );
+            appBar: const CustomAppBarMini(title: 'Profile'),
+            body: RefreshIndicator(
+              onRefresh: _handleRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: userData != null ? _buildBody() : _buildNoUserContent(),
+              ),
+            ),
+            bottomNavigationBar: const CustomBottomNavBar(
+              currentRoute: '/profile',
+            ),
+          );
   }
 
   Widget _buildNoUserContent() {

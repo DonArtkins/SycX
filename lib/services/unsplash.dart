@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:sycx_flutter_app/utils/constants.dart';
+import 'package:SycX/utils/constants.dart';
 
 class Unsplash {
   static const String _baseUrl = 'https://api.unsplash.com';

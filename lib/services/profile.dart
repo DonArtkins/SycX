@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:sycx_flutter_app/services/api_client.dart';
-import 'package:sycx_flutter_app/utils/secure_storage.dart';
+import 'package:SycX/services/api_client.dart';
+import 'package:SycX/utils/secure_storage.dart';
 
 class ProfileService {
   static final ApiClient _apiClient = ApiClient(httpClient: http.Client());

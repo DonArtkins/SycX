@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sycx_flutter_app/models/user.dart';
-import 'package:sycx_flutter_app/models/summary.dart';
-import 'package:sycx_flutter_app/models/feedback.dart';
+import 'package:SycX/models/user.dart';
+import 'package:SycX/models/summary.dart';
+import 'package:SycX/models/feedback.dart';
 
 class Database {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -11,7 +11,7 @@ class Database {
     try {
       // Use summary's toFirestore method to get proper data structure
       final data = summary.toFirestore();
-      
+
       // Create the document with the appropriate ID
       await firestore.collection('summaries').doc(summary.id).set(data);
     } catch (e) {

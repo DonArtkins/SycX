@@ -27,7 +27,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace = "com.sycx.sycx_flutter_app"
+    namespace = "com.sycx.SycX"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/screens/auth/login.dart';
-import 'package:sycx_flutter_app/screens/auth/register.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/animated_button.dart';
+import 'package:SycX/screens/auth/login.dart';
+import 'package:SycX/screens/auth/register.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/animated_button.dart';
 
 class Welcome extends StatelessWidget {
   const Welcome({super.key});

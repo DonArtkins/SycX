@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
+import 'package:SycX/utils/constants.dart';
 import 'package:path/path.dart' as path;
 
 class Cloudinary {

@@ -6,17 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sycx_flutter_app/services/database.dart';
-import 'package:sycx_flutter_app/services/summary.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/animated_button.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
-import 'package:sycx_flutter_app/widgets/loading.dart';
-import 'package:sycx_flutter_app/widgets/padded_round_slider_value_indicator_shape.dart';
+import 'package:SycX/services/database.dart';
+import 'package:SycX/services/summary.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/animated_button.dart';
+import 'package:SycX/widgets/custom_app_bar.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/widgets/loading.dart';
+import 'package:SycX/widgets/padded_round_slider_value_indicator_shape.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
-import 'package:sycx_flutter_app/models/user.dart' as app_user;
+import 'package:SycX/models/user.dart' as app_user;
 
 class Upload extends StatefulWidget {
   const Upload({super.key});

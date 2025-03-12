@@ -36,7 +36,7 @@ SycX is an AI-powered summarization app designed to help university students sim
 
 1. Navigate to the project directory:
    ```
-   cd sycx_flutter_app
+   cd SycX
    ```
 
 3. Install dependencies:

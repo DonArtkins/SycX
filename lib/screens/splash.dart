@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/services/auth.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
+import 'package:SycX/services/auth.dart';
+import 'package:SycX/utils/constants.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});

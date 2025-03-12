@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar_mini.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
-import 'package:sycx_flutter_app/widgets/animated_button.dart';
-import 'package:sycx_flutter_app/widgets/custom_textfield.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/custom_app_bar_mini.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/widgets/animated_button.dart';
+import 'package:SycX/widgets/custom_textfield.dart';
 
 class AccountSettings extends StatefulWidget {
   const AccountSettings({super.key});

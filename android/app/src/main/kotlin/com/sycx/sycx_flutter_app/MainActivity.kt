@@ -1,4 +1,4 @@
-package com.sycx.sycx_flutter_app
+package com.sycx.SycX
 
 import io.flutter.embedding.android.FlutterActivity
 

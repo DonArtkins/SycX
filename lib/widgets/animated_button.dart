@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
+import 'package:SycX/utils/constants.dart';
 
 class AnimatedButton extends StatefulWidget {
   final String text;

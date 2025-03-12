@@ -3,13 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
-import 'package:sycx_flutter_app/models/summary.dart';
-import 'package:sycx_flutter_app/services/database.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar_mini.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
-import 'package:sycx_flutter_app/widgets/loading.dart';
-import 'package:sycx_flutter_app/widgets/summary_card.dart';
+import 'package:SycX/models/summary.dart';
+import 'package:SycX/services/database.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/custom_app_bar_mini.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/widgets/loading.dart';
+import 'package:SycX/widgets/summary_card.dart';
 
 class SearchResults extends StatefulWidget {
   final String searchQuery;

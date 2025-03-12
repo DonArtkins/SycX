@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/screens/auth/login.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/services/auth.dart';
-import 'package:sycx_flutter_app/widgets/loading.dart';
-import 'package:sycx_flutter_app/models/user.dart' as app_user;
+import 'package:SycX/screens/auth/login.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/services/auth.dart';
+import 'package:SycX/widgets/loading.dart';
+import 'package:SycX/models/user.dart' as app_user;
 
 class UserAvatar extends StatelessWidget {
   final app_user.User user;

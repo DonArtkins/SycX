@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar_mini.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/custom_app_bar_mini.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
 
 class DownloadData extends StatefulWidget {
   const DownloadData({super.key});

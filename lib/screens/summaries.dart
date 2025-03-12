@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:sycx_flutter_app/models/user.dart' as app_user;
-import 'package:sycx_flutter_app/models/summary.dart';
-import 'package:sycx_flutter_app/services/database.dart';
-import 'package:sycx_flutter_app/screens/search_results.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
-import 'package:sycx_flutter_app/widgets/custom_textfield.dart';
-import 'package:sycx_flutter_app/widgets/loading.dart';
-import 'package:sycx_flutter_app/widgets/summary_card.dart';
+import 'package:SycX/models/user.dart' as app_user;
+import 'package:SycX/models/summary.dart';
+import 'package:SycX/services/database.dart';
+import 'package:SycX/screens/search_results.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/custom_app_bar.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/widgets/custom_textfield.dart';
+import 'package:SycX/widgets/loading.dart';
+import 'package:SycX/widgets/summary_card.dart';
 
 class Summaries extends StatefulWidget {
   const Summaries({super.key});

@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
-import 'package:sycx_flutter_app/services/api_client.dart';
-import 'package:sycx_flutter_app/services/cloudinary.dart';
-import 'package:sycx_flutter_app/services/database.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/utils/secure_storage.dart';
-import 'package:sycx_flutter_app/models/summary.dart';
+import 'package:SycX/services/api_client.dart';
+import 'package:SycX/services/cloudinary.dart';
+import 'package:SycX/services/database.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/utils/secure_storage.dart';
+import 'package:SycX/models/summary.dart';
 
 class SummaryService {
   static final ApiClient apiClient =

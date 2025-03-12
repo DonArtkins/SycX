@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/models/summary.dart';
-import 'package:sycx_flutter_app/widgets/custom_app_bar_mini.dart';
-import 'package:sycx_flutter_app/widgets/custom_bottom_nav_bar.dart';
+import 'package:SycX/models/summary.dart';
+import 'package:SycX/widgets/custom_app_bar_mini.dart';
+import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class ViewSummary extends StatefulWidget {

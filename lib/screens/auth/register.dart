@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sycx_flutter_app/services/auth.dart';
+import 'package:SycX/services/auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sycx_flutter_app/utils/pick_image.dart';
-import 'package:sycx_flutter_app/utils/convert_to_base64.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/widgets/custom_textfield.dart';
-import 'package:sycx_flutter_app/widgets/animated_button.dart';
+import 'package:SycX/utils/pick_image.dart';
+import 'package:SycX/utils/convert_to_base64.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/widgets/custom_textfield.dart';
+import 'package:SycX/widgets/animated_button.dart';
 import 'dart:io';
-import 'package:sycx_flutter_app/widgets/loading.dart';
+import 'package:SycX/widgets/loading.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});

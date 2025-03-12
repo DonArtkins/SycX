@@ -1,6 +1,6 @@
 {
-    "name": "sycx_flutter_app",
-    "short_name": "sycx_flutter_app",
+    "name": "SycX",
+    "short_name": "SycX",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",

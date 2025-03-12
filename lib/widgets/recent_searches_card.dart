@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/screens/search_results.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/screens/search_results.dart';
 
 class RecentSearchesCard extends StatelessWidget {
   final List<String> searches;

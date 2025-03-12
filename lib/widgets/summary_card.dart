@@ -2,10 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:intl/intl.dart';
-import 'package:sycx_flutter_app/models/summary.dart';
-import 'package:sycx_flutter_app/services/unsplash.dart';
-import 'package:sycx_flutter_app/utils/constants.dart';
-import 'package:sycx_flutter_app/screens/summary_details.dart';
+import 'package:SycX/models/summary.dart';
+import 'package:SycX/services/unsplash.dart';
+import 'package:SycX/utils/constants.dart';
+import 'package:SycX/screens/summary_details.dart';
 
 class SummaryCard extends StatefulWidget {
   final Summary summary;
