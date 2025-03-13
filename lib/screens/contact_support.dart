@@ -80,7 +80,7 @@ class ContactSupport extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => _launchUrl(context, url),
+        onTap: () => _launchUrl(context, url, title),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -131,23 +131,71 @@ class ContactSupport extends StatelessWidget {
     );
   }
 
-  void _launchUrl(BuildContext context, String url) async {
+  void _launchUrl(BuildContext context, String url, String methodType) async {
     final Uri uri = Uri.parse(url);
     try {
+      // Different handling based on URL scheme
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        // If can't launch directly, try opening in browser
-        final fallbackUrl = Uri.parse(
-            'https://web.whatsapp.com/send?phone=${uri.path.replaceAll('/', '')}');
-        if (await canLaunchUrl(fallbackUrl)) {
-          await launchUrl(fallbackUrl, mode: LaunchMode.externalApplication);
-        } else {
-          _showToast('Could not launch $url');
+        // For most URL schemes, we want to use external application
+        LaunchMode mode = LaunchMode.externalApplication;
+
+        // For web URLs, we might want to use in-app browser if available
+        if (url.startsWith('http') && !url.contains('wa.me')) {
+          mode = LaunchMode.externalApplication;
         }
+
+        await launchUrl(uri, mode: mode);
+      } else {
+        _handleFallback(context, uri, methodType);
       }
     } catch (e) {
-      _showToast('Error: ${e.toString()}');
+      _showToast('Error launching $methodType: ${e.toString()}');
+    }
+  }
+
+  void _handleFallback(BuildContext context, Uri uri, String methodType) async {
+    try {
+      // Specific fallbacks for different contact methods
+      if (methodType == 'Email Us') {
+        // Email fallback
+        final String email = uri.path.replaceAll('/', '');
+        final emailFallback = Uri.parse('mailto:$email');
+        if (await canLaunchUrl(emailFallback)) {
+          await launchUrl(emailFallback);
+          return;
+        }
+      } else if (methodType == 'WhatsApp') {
+        // WhatsApp fallback - try web version
+        final String phone = uri.path.replaceAll('/', '');
+        final whatsappFallback =
+            Uri.parse('https://web.whatsapp.com/send?phone=$phone');
+        if (await canLaunchUrl(whatsappFallback)) {
+          await launchUrl(whatsappFallback,
+              mode: LaunchMode.externalApplication);
+          return;
+        }
+      } else if (methodType == 'Text Us') {
+        // SMS fallback
+        final String phone = uri.path.replaceAll('/', '');
+        final smsFallback = Uri.parse('sms:$phone');
+        if (await canLaunchUrl(smsFallback)) {
+          await launchUrl(smsFallback);
+          return;
+        }
+      } else if (methodType == 'Call Us') {
+        // Call fallback
+        final String phone = uri.path.replaceAll('/', '');
+        final callFallback = Uri.parse('tel:$phone');
+        if (await canLaunchUrl(callFallback)) {
+          await launchUrl(callFallback);
+          return;
+        }
+      }
+
+      // If all fallbacks fail
+      _showToast('Could not launch $methodType');
+    } catch (e) {
+      _showToast('Error with fallback: ${e.toString()}');
     }
   }
 

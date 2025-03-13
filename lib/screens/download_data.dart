@@ -141,15 +141,34 @@ class DownloadDataState extends State<DownloadData> {
         return AlertDialog(
           title: Text('Download Request', style: AppTextStyles.titleStyle),
           content: Text(
-            'Your data download request has been received. We\'ll notify you when it\'s ready.',
-            style: AppTextStyles.bodyTextStyle,
+            'Thank you for your data download request; due to a temporary surge in processing demand, it’s on hold for now, but we’ll notify you as soon as it’s ready.',
+            style: AppTextStyles.bodyTextStyle.copyWith(
+              color: AppColors.secondaryTextColorDark,
+              fontSize: 16,
+            ),
           ),
           actions: [
-            TextButton(
-              child: Text('OK', style: AppTextStyles.buttonTextStyle),
+            ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryButtonColor,
+                foregroundColor: AppColors.primaryButtonTextColor,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 35, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 5,
+              ),
+              child: Text(
+                'OK',
+                style: AppTextStyles.buttonTextStyle.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
