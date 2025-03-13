@@ -25,11 +25,9 @@ class EditProfile extends StatefulWidget {
 
 class EditProfileState extends State<EditProfile> {
   late TextEditingController _nameController;
-  late TextEditingController _emailController;
   late TextEditingController _usernameController;
   File? _selectedImage;
   final FocusNode _nameFocus = FocusNode();
-  final FocusNode _emailFocus = FocusNode();
   final FocusNode _usernameFocus = FocusNode();
   bool _isLoading = false;
   Timer? _debounceTimer;
@@ -39,7 +37,6 @@ class EditProfileState extends State<EditProfile> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.userData?.name);
-    _emailController = TextEditingController(text: widget.userData?.email);
     _usernameController =
         TextEditingController(text: widget.userData?.userName);
   }
@@ -47,10 +44,8 @@ class EditProfileState extends State<EditProfile> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
     _usernameController.dispose();
     _nameFocus.dispose();
-    _emailFocus.dispose();
     _usernameFocus.dispose();
     _debounceTimer?.cancel();
     super.dispose();
@@ -85,12 +80,12 @@ class EditProfileState extends State<EditProfile> {
               await compute(convertFileToBase64Compute, _selectedImage!);
         }
 
-        // Create an updated user object
+        // Create an updated user object with all required fields
         final updatedUser = app_user.User(
           id: widget.userData!.id,
           fullName: _nameController.text,
           userName: _usernameController.text,
-          email: _emailController.text,
+          email: widget.userData!.email, // Use existing email
           userProfile: base64Image ?? widget.userData?.profileImage ?? '',
           createdAt: widget.userData!.createdAt,
           updatedAt: DateTime.now(), // Update the updated at timestamp
@@ -164,19 +159,6 @@ class EditProfileState extends State<EditProfile> {
                         validator: (value) =>
                             value!.isEmpty ? 'Username cannot be empty' : null,
                         prefixIcon: Icons.alternate_email,
-                        onFieldSubmitted: (_) {
-                          FocusScope.of(context).requestFocus(_emailFocus);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _emailController,
-                        focusNode: _emailFocus,
-                        hintText: 'Email',
-                        onChanged: (value) {},
-                        validator: (value) =>
-                            value!.isEmpty ? 'Email cannot be empty' : null,
-                        prefixIcon: Icons.email,
                         onFieldSubmitted: (_) => _submitForm(),
                       ),
                       const SizedBox(height: 32),

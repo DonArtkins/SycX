@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:SycX/dummy_data.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:SycX/models/user.dart' as app_user;
+import 'package:SycX/models/summary.dart';
+import 'package:SycX/services/database.dart';
 import 'package:SycX/utils/constants.dart';
 import 'package:SycX/widgets/custom_app_bar_mini.dart';
 import 'package:SycX/widgets/custom_bottom_nav_bar.dart';
 import 'package:SycX/widgets/loading.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class YourData extends StatefulWidget {
   const YourData({super.key});
@@ -14,9 +18,12 @@ class YourData extends StatefulWidget {
 
 class YourDataState extends State<YourData>
     with SingleTickerProviderStateMixin {
-  bool _loading = false;
+  bool _loading = true;
   late AnimationController _animationController;
-  late List<Map<String, dynamic>> pinnedSummaries;
+  late List<Summary> pinnedSummaries = [];
+  List<String> recentSearches = [];
+  app_user.User? userData;
+  final Database _database = Database();
 
   @override
   void initState() {
@@ -32,14 +39,76 @@ class YourDataState extends State<YourData>
     setState(() {
       _loading = true;
     });
-    await Future.delayed(const Duration(seconds: 2));
-    pinnedSummaries = DummyData.summaries
-        .where((summary) => summary['isPinned'] == true)
-        .toList();
-    setState(() {
-      _loading = false;
-    });
-    _animationController.forward();
+
+    try {
+      // Get current user ID
+      final firebaseUser = firebase_auth.FirebaseAuth.instance.currentUser;
+      if (firebaseUser != null) {
+        // Fetch user data
+        final user = await _database.getUser(firebaseUser.uid);
+
+        // Fetch pinned summaries
+        List<Summary> summariesList = await _fetchPinnedSummaries(firebaseUser.uid);
+
+        // Fetch recent searches
+        List<String> searches = await _fetchRecentSearches(firebaseUser.uid);
+
+        if (mounted) {
+          setState(() {
+            userData = user;
+            pinnedSummaries = summariesList;
+            recentSearches = searches;
+            _loading = false;
+          });
+          _animationController.forward();
+        }
+      } else {
+        setState(() {
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading data: $e');
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future<List<Summary>> _fetchPinnedSummaries(String userId) async {
+    try {
+      // Create a new database listener for this specific query to avoid stream conflicts
+      QuerySnapshot summariesSnapshot = await _database.firestore
+          .collection('summaries')
+          .where('userId', isEqualTo: userId)
+          .where('isPinned', isEqualTo: true)
+          .get();
+
+      return summariesSnapshot.docs
+          .map((doc) => Summary.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      print('Error fetching pinned summaries: $e');
+      return [];
+    }
+  }
+
+  Future<List<String>> _fetchRecentSearches(String userId) async {
+    try {
+      QuerySnapshot searchesSnapshot = await _database.firestore
+          .collection('searches')
+          .where('userId', isEqualTo: userId)
+          .orderBy('timestamp', descending: true)
+          .limit(7)
+          .get();
+
+      return searchesSnapshot.docs
+          .map((doc) => doc['query'] as String)
+          .toList();
+    } catch (e) {
+      print('Error fetching searches: $e');
+      return [];
+    }
   }
 
   @override
@@ -53,18 +122,18 @@ class YourDataState extends State<YourData>
     return _loading
         ? const Loading()
         : Scaffold(
-            appBar: const CustomAppBarMini(title: 'Your Data'),
-            body: RefreshIndicator(
-              onRefresh: _handleRefresh,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: _buildBody(),
-              ),
-            ),
-            bottomNavigationBar: const CustomBottomNavBar(
-              currentRoute: '/your_data',
-            ),
-          );
+      appBar: const CustomAppBarMini(title: 'Your Data'),
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: _buildBody(),
+        ),
+      ),
+      bottomNavigationBar: const CustomBottomNavBar(
+        currentRoute: '/your_data',
+      ),
+    );
   }
 
   Widget _buildBody() {
@@ -75,16 +144,34 @@ class YourDataState extends State<YourData>
         children: [
           _buildDataOverview(),
           const SizedBox(height: 24),
-          _buildDataCard('Personal Information', Icons.person, DummyData.user),
+          _buildDataCard('Personal Information', Icons.person, _getUserInfo()),
           const SizedBox(height: 16),
           _buildDataCard('Pinned Summaries', Icons.summarize,
               {'Total': pinnedSummaries.length.toString()}),
           const SizedBox(height: 16),
           _buildDataCard('Recent Searches', Icons.search,
-              {'Searches': DummyData.searches.take(7).join(', ')}),
+              {'Searches': recentSearches.take(7).join(', ')}),
         ],
       ),
     );
+  }
+
+  Map<String, dynamic> _getUserInfo() {
+    if (userData == null) {
+      return {};
+    }
+
+    return {
+      'Name': userData!.name,
+      'UserName': '@${userData!.userName}',
+      'Email': userData!.email,
+      'Joined': _formatDate(userData!.createdAt),
+    };
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'N/A';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   Widget _buildDataOverview() {
@@ -118,7 +205,7 @@ class YourDataState extends State<YourData>
                 _buildDataStat(
                     'Pinned Summaries', pinnedSummaries.length.toString()),
                 _buildDataStat('Recent Searches',
-                    DummyData.searches.take(7).length.toString()),
+                    recentSearches.take(7).length.toString()),
               ],
             ),
           ],
@@ -186,7 +273,7 @@ class YourDataState extends State<YourData>
             ...data.entries
                 .where((entry) => entry.key != 'avatar')
                 .map((entry) => _buildDataItem(entry.key, entry.value)),
-            if (title == 'Personal Information')
+            if (title == 'Personal Information' && userData != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: Center(
@@ -195,10 +282,6 @@ class YourDataState extends State<YourData>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.blue, width: 2),
-                    ),
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundImage: NetworkImage(DummyData.user['avatar']!),
                     ),
                   ),
                 ),
@@ -265,7 +348,7 @@ class YourDataState extends State<YourData>
     );
   }
 
-  Widget _buildSummaryItem(Map<String, dynamic> summary) {
+  Widget _buildSummaryItem(Summary summary) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -275,10 +358,22 @@ class YourDataState extends State<YourData>
             height: 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: NetworkImage(summary['image']),
-                fit: BoxFit.cover,
+              color: AppColors.primaryTextColorDark.withOpacity(0.1),
+            ),
+            child: summary.imageUrl != null && summary.imageUrl!.isNotEmpty
+                ? Image.network(
+              summary.imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Icon(
+                Icons.article,
+                color: AppColors.primaryTextColorDark.withOpacity(0.6),
+                size: 30,
               ),
+            )
+                : Icon(
+              Icons.article,
+              color: AppColors.primaryTextColorDark.withOpacity(0.6),
+              size: 30,
             ),
           ),
           const SizedBox(width: 12),
@@ -287,14 +382,14 @@ class YourDataState extends State<YourData>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  summary['title'],
+                  summary.title ?? 'Untitled Summary',
                   style: AppTextStyles.bodyTextStyle.copyWith(
                     color: AppColors.primaryTextColorDark,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  summary['date'],
+                  _formatSummaryDate(summary.createdAt),
                   style: AppTextStyles.bodyTextStyle.copyWith(
                     color: AppColors.secondaryTextColorDark,
                     fontSize: 12,
@@ -306,6 +401,10 @@ class YourDataState extends State<YourData>
         ],
       ),
     );
+  }
+
+  String _formatSummaryDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   Future<void> _handleRefresh() async {
