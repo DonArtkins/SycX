@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert'; // Add this import for base64 handling
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:SycX/services/auth.dart';
@@ -29,6 +30,7 @@ class RegisterState extends State<Register> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   File? _selectedImage;
+  String? _profileImageBase64; // Added to store profile image from social login
   bool _obscurePassword = true;
   bool _isLoading = false;
   Timer? _debounceTimer;
@@ -41,6 +43,7 @@ class RegisterState extends State<Register> {
       _emailController.clear();
       _passwordController.clear();
       _selectedImage = null;
+      _profileImageBase64 = null;
     });
   }
 
@@ -55,10 +58,22 @@ class RegisterState extends State<Register> {
     _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
       if (_formKey.currentState!.validate()) {
         setState(() => _isLoading = true);
-        String base64Image = '';
+        String profileImage = '';
         try {
           if (_selectedImage != null) {
-            base64Image = await compute(convertFileToBase64, _selectedImage!);
+            // Check if file exists before conversion
+            if (await _selectedImage!.exists()) {
+              profileImage =
+                  await compute(convertFileToBase64, _selectedImage!);
+            } else {
+              print('Selected image file does not exist');
+              _showErrorToast('Image file not found. Please select again.');
+              setState(() => _isLoading = false);
+              return;
+            }
+          } else if (_profileImageBase64 != null) {
+            // Use the profile image from social login if available
+            profileImage = _profileImageBase64!;
           }
 
           // Trim whitespace from input
@@ -80,7 +95,7 @@ class RegisterState extends State<Register> {
             username,
             email,
             password,
-            base64Image,
+            profileImage,
           );
 
           setState(() => _isLoading = false);
@@ -115,12 +130,15 @@ class RegisterState extends State<Register> {
   void _selectProfilePicture() async {
     final picker = PickImage();
     try {
-      final File? selectedImage =
-          (await picker.pickImageFromGallery()) as File?;
-      if (selectedImage != null) {
+      final result = await picker.pickImageFromGallery();
+      if (result != null) {
         setState(() {
-          _selectedImage = selectedImage;
+          _selectedImage = result;
+          _profileImageBase64 =
+              null; // Clear any existing social media profile image
         });
+      } else {
+        _showErrorToast('Could not select image. Please try again.');
       }
     } catch (e) {
       print('Error selecting image: $e');
@@ -128,12 +146,35 @@ class RegisterState extends State<Register> {
     }
   }
 
+  // Modified to handle profile images from Google and store them properly
   void _registerWithGoogle() async {
     setState(() => _isLoading = true);
     Map<String, dynamic> result = await Auth().signInWithGoogle();
     setState(() => _isLoading = false);
 
     if (result['success']) {
+      // If it's a new user and we get a profile image URL, we can store it to use in registration
+      if (result.containsKey('profileImage') &&
+          result['profileImage'] != null) {
+        // Store the profile image URL as is if it's a URL
+        if (result['profileImage'].toString().startsWith('http')) {
+          _profileImageBase64 = result['profileImage'];
+
+          // Pre-fill other fields if available
+          if (result.containsKey('name') && result['name'] != null) {
+            _fullnameController.text = result['name'];
+          }
+          if (result.containsKey('email') && result['email'] != null) {
+            _emailController.text = result['email'];
+
+            // Generate a suggested username from email
+            if (_emailController.text.contains('@')) {
+              _usernameController.text = _emailController.text.split('@')[0];
+            }
+          }
+        }
+      }
+
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       Fluttertoast.showToast(
@@ -146,12 +187,32 @@ class RegisterState extends State<Register> {
     }
   }
 
+  // Modified to handle profile images from Apple and store them properly
   void _registerWithApple() async {
     setState(() => _isLoading = true);
     Map<String, dynamic> result = await Auth().signInWithApple();
     setState(() => _isLoading = false);
 
     if (result['success']) {
+      // If it's a new user and we get a profile image, we can store it to use in registration
+      if (result.containsKey('profileImage') &&
+          result['profileImage'] != null) {
+        _profileImageBase64 = result['profileImage'];
+
+        // Pre-fill other fields if available
+        if (result.containsKey('name') && result['name'] != null) {
+          _fullnameController.text = result['name'];
+        }
+        if (result.containsKey('email') && result['email'] != null) {
+          _emailController.text = result['email'];
+
+          // Generate a suggested username from email
+          if (_emailController.text.contains('@')) {
+            _usernameController.text = _emailController.text.split('@')[0];
+          }
+        }
+      }
+
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       Fluttertoast.showToast(
@@ -181,10 +242,11 @@ class RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           Navigator.pushReplacementNamed(context, '/welcome');
         }
+        return;
       },
       child: Scaffold(
         body: _isLoading
@@ -240,35 +302,7 @@ class RegisterState extends State<Register> {
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  if (_selectedImage != null)
-                                    Center(
-                                      child: Container(
-                                        width: 180,
-                                        height: 180,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppColors.primaryButtonColor,
-                                            width: 3,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: AppColors
-                                                  .primaryButtonColor
-                                                  .withOpacity(0.3),
-                                              blurRadius: 10,
-                                              spreadRadius: 2,
-                                            ),
-                                          ],
-                                        ),
-                                        child: ClipOval(
-                                          child: Image.file(
-                                            _selectedImage!,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                  _buildProfileImage(),
                                   const SizedBox(height: 24),
                                   AnimatedButton(
                                     text: 'Select Profile Picture',
@@ -350,9 +384,9 @@ class RegisterState extends State<Register> {
                                         return 'Password must be at least 8 characters long';
                                       }
                                       if (!RegExp(
-                                              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+                                              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&.#_\-+=]{8,}$')
                                           .hasMatch(value)) {
-                                        return 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+                                        return 'Password must contain uppercase, lowercase, and number';
                                       }
                                       return null;
                                     },
@@ -429,6 +463,65 @@ class RegisterState extends State<Register> {
                   ),
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildProfileImage() {
+    return Center(
+      child: Container(
+        width: 180,
+        height: 180,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.primaryButtonColor,
+            width: 3,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryButtonColor.withOpacity(0.3),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: ClipOval(
+          child: _selectedImage != null
+              ? Image.file(
+                  _selectedImage!,
+                  fit: BoxFit.cover,
+                )
+              : _profileImageBase64 != null
+                  ? _profileImageBase64!.startsWith('http')
+                      ? Image.network(
+                          _profileImageBase64!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person,
+                              size: 80,
+                              color: Colors.white,
+                            );
+                          },
+                        )
+                      : Image.memory(
+                          base64Decode(_profileImageBase64!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person,
+                              size: 80,
+                              color: Colors.white,
+                            );
+                          },
+                        )
+                  : const Icon(
+                      Icons.person,
+                      size: 80,
+                      color: Colors.white,
+                    ),
+        ),
       ),
     );
   }

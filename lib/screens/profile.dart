@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:SycX/models/user.dart' as app_user;
@@ -19,7 +20,7 @@ class Profile extends StatefulWidget {
 }
 
 class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
-  bool _loading = false;
+  bool _loading = true;
   late AnimationController _animationController;
   app_user.User? userData;
   final Database _database = Database();
@@ -35,6 +36,10 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _loadData() async {
+    setState(() {
+      _loading = true; // Set loading to true when refreshing
+    });
+
     try {
       final firebaseUser = firebase_auth.FirebaseAuth.instance.currentUser;
       if (firebaseUser != null) {
@@ -155,7 +160,8 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                 padding: const EdgeInsets.all(4),
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(userData!.profileImage ?? ''),
+                  backgroundImage: _getProfileImageProvider(),
+                  backgroundColor: Colors.grey[200],
                 ),
               ),
             ),
@@ -203,6 +209,34 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  // New method to handle different types of profile images
+  ImageProvider? _getProfileImageProvider() {
+    if (userData?.profileImage == null || userData!.profileImage!.isEmpty) {
+      return null; // No image available
+    }
+
+    try {
+      // Check if the image is a URL (starts with http or https)
+      if (userData!.profileImage!.startsWith('http')) {
+        return NetworkImage(userData!.profileImage!);
+      }
+      // Otherwise treat it as a base64 encoded image
+      else {
+        // Safely try to decode the base64 string
+        try {
+          final bytes = base64Decode(userData!.profileImage!);
+          return MemoryImage(bytes);
+        } catch (e) {
+          print('Error decoding base64 image: $e');
+          return null;
+        }
+      }
+    } catch (e) {
+      print('Error creating image provider: $e');
+      return null;
+    }
   }
 
   Widget _buildInfoCard() {

@@ -3,6 +3,7 @@ import 'package:SycX/screens/auth/login.dart';
 import 'package:SycX/screens/auth/register.dart';
 import 'package:SycX/utils/constants.dart';
 import 'package:SycX/widgets/animated_button.dart';
+import 'package:flutter/services.dart';
 
 class Welcome extends StatelessWidget {
   const Welcome({super.key});
@@ -34,8 +35,9 @@ class Welcome extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
-        // Do nothing as this is the initial screen
+      onPopInvokedWithResult: (bool didPop, bool? result) async {
+        // Exit the app when back button is pressed
+        return SystemNavigator.pop();
       },
       child: Scaffold(
         body: RefreshIndicator(
@@ -43,7 +45,11 @@ class Welcome extends StatelessWidget {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Container(
-              height: MediaQuery.of(context).size.height,
+              // Removed fixed height constraint to allow scrolling
+              // Minimum height ensures it fills the screen on larger devices
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
+              ),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -117,6 +123,8 @@ class Welcome extends StatelessWidget {
                           backgroundColor: AppColors.secondaryButtonColor,
                           textColor: AppColors.secondaryButtonTextColor,
                         ),
+                        const SizedBox(
+                            height: 20), // Added extra padding at bottom
                       ],
                     ),
                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:SycX/screens/auth/login.dart';
 import 'package:SycX/utils/constants.dart';
 import 'package:SycX/services/auth.dart';
@@ -101,10 +102,43 @@ class UserAvatar extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(2),
           child: CircleAvatar(
-            backgroundImage: NetworkImage(user.userProfile),
+            backgroundImage: _getProfileImage(),
+            backgroundColor: Colors.grey[200],
+            child: _buildPlaceholderIfNeeded(),
           ),
         ),
       ),
     );
+  }
+
+  ImageProvider? _getProfileImage() {
+    if (user.userProfile.isNotEmpty) {
+      // Check if the profile image is a URL or base64 string
+      if (user.userProfile.startsWith('http')) {
+        return NetworkImage(user.userProfile);
+      } else {
+        try {
+          // Try to decode as base64
+          return MemoryImage(base64Decode(user.userProfile));
+        } catch (e) {
+          print('Error decoding base64 image: $e');
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
+  Widget? _buildPlaceholderIfNeeded() {
+    if (user.userProfile.isEmpty) {
+      // Return a placeholder icon if no image is available
+      return const Icon(
+        Icons.person,
+        size: 24,
+        color: AppColors.secondaryTextColor,
+      );
+    }
+    // Return null to allow CircleAvatar to display the backgroundImage
+    return null;
   }
 }

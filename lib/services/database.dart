@@ -6,23 +6,6 @@ import 'package:SycX/models/feedback.dart';
 class Database {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  // Summary operations
-  Future<void> createSummary(Summary summary) async {
-    try {
-      // Use summary's toFirestore method to get proper data structure
-      final data = summary.toFirestore();
-
-      // Create the document with the appropriate ID
-      await firestore.collection('summaries').doc(summary.id).set(data);
-    } catch (e) {
-      print('Error creating summary: $e');
-      rethrow;
-    }
-  }
-
-  // Other methods remain the same
-  // ...
-
   // User operations
   Future<void> createUser(User user) async {
     await firestore.collection('users').doc(user.id).set(user.toFirestore());
@@ -90,6 +73,20 @@ class Database {
       return User.fromFirestore(querySnapshot.docs.first);
     }
     return null;
+  }
+
+  // Summary operations
+  Future<void> createSummary(Summary summary) async {
+    try {
+      // Use summary's toFirestore method to get proper data structure
+      final data = summary.toFirestore();
+
+      // Create the document with the appropriate ID
+      await firestore.collection('summaries').doc(summary.id).set(data);
+    } catch (e) {
+      print('Error creating summary: $e');
+      rethrow;
+    }
   }
 
   // Fetch summaries for a specific user

@@ -1,3 +1,7 @@
+import 'package:SycX/services/auth.dart';
+import 'package:SycX/services/database.dart';
+import 'package:SycX/widgets/loading.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:SycX/utils/constants.dart';
 import 'package:SycX/widgets/custom_app_bar_mini.dart';
@@ -20,6 +24,9 @@ class AccountSettingsState extends State<AccountSettings> {
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
+  bool _loading = false; // Add loading state
+  final Auth _auth = Auth(); // Add Auth instance
+  final Database _database = Database(); // Add Database instance
 
   @override
   void dispose() {
@@ -31,28 +38,30 @@ class AccountSettingsState extends State<AccountSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBarMini(title: 'Account Settings'),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(defaultPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildChangePasswordSection(),
-                const SizedBox(height: defaultMargin * 2),
-                _buildDangerZone(),
-              ],
+    return _loading
+        ? const Loading()
+        : Scaffold(
+            appBar: const CustomAppBarMini(title: 'Account Settings'),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(defaultPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildChangePasswordSection(),
+                      const SizedBox(height: defaultMargin * 2),
+                      _buildDangerZone(),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: const CustomBottomNavBar(
-        currentRoute: '/account_settings',
-      ),
-    );
+            bottomNavigationBar: const CustomBottomNavBar(
+              currentRoute: '/account_settings',
+            ),
+          );
   }
 
   Widget _buildChangePasswordSection() {
@@ -160,22 +169,6 @@ class AccountSettingsState extends State<AccountSettings> {
     );
   }
 
-  void _changePassword() {
-    if (_formKey.currentState!.validate()) {
-      // TODO: Implement password change logic
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Password changed successfully',
-            style: AppTextStyles.bodyTextStyle
-                .copyWith(color: AppColors.primaryTextColor),
-          ),
-          backgroundColor: AppColors.gradientMiddle,
-        ),
-      );
-    }
-  }
-
   Widget _buildDangerZone() {
     return Card(
       color: Colors.transparent,
@@ -208,6 +201,157 @@ class AccountSettingsState extends State<AccountSettings> {
         ),
       ),
     );
+  }
+
+  // Implement password change functionality
+  Future<void> _changePassword() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _loading = true;
+      });
+
+      try {
+        // Get current user
+        final user = _auth.getCurrentUser();
+
+        if (user != null && user.email != null) {
+          // First, verify current password is correct
+          final signInResult = await _auth.signInWithEmailAndPassword(
+            user.email!,
+            _currentPasswordController.text,
+          );
+
+          if (signInResult['success'] == true) {
+            // Create EmailAuthCredential for reauthentication
+            AuthCredential credential = EmailAuthProvider.credential(
+              email: user.email!,
+              password: _currentPasswordController.text,
+            );
+
+            // Reauthenticate user
+            await user.reauthenticateWithCredential(credential);
+
+            // Change password
+            await user.updatePassword(_newPasswordController.text);
+
+            // Reset form
+            _currentPasswordController.clear();
+            _newPasswordController.clear();
+            _confirmPasswordController.clear();
+
+            setState(() {
+              _loading = false;
+            });
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Password changed successfully',
+                    style: AppTextStyles.bodyTextStyle
+                        .copyWith(color: AppColors.primaryTextColor),
+                  ),
+                  backgroundColor: AppColors.gradientMiddle,
+                ),
+              );
+            }
+          } else {
+            throw Exception(
+                signInResult['message'] ?? 'Current password is incorrect');
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _loading = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Error: ${e.toString()}',
+                style: AppTextStyles.bodyTextStyle
+                    .copyWith(color: AppColors.primaryTextColor),
+              ),
+              backgroundColor: AppColors.gradientEnd,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  // Implement account deletion
+  Future<void> _deleteAccount() async {
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      final user = _auth.getCurrentUser();
+
+      if (user != null) {
+        final userId = user.uid;
+
+        // Sign out first to prevent auth errors
+        await _auth.signOut();
+
+        // Navigate to login screen immediately after logout
+        if (mounted) {
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+
+        // Delete user data from Firestore
+        await _deleteUserData(userId);
+
+        // Finally delete the Firebase Auth account
+        await user.delete();
+      }
+    } catch (e) {
+      print('Error deleting account: $e');
+      // We're already logged out and navigated away, so we don't need to show a snackbar
+    }
+  }
+
+  // Helper method to delete all user data from Firestore
+  Future<void> _deleteUserData(String userId) async {
+    try {
+      // Delete user summaries
+      final summariesSnapshot = await _database.firestore
+          .collection('summaries')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (final doc in summariesSnapshot.docs) {
+        await _database.firestore.collection('summaries').doc(doc.id).delete();
+      }
+
+      // Delete user feedback
+      final feedbackSnapshot = await _database.firestore
+          .collection('feedback')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (final doc in feedbackSnapshot.docs) {
+        await _database.firestore.collection('feedback').doc(doc.id).delete();
+      }
+
+      // Delete user search history
+      final searchesSnapshot = await _database.firestore
+          .collection('searches')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (final doc in searchesSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      // Finally, delete the user document itself
+      await _database.firestore.collection('users').doc(userId).delete();
+    } catch (e) {
+      print('Error deleting user data: $e');
+    }
   }
 
   void _showDeleteAccountDialog() {
@@ -244,18 +388,8 @@ class AccountSettingsState extends State<AccountSettings> {
                     .copyWith(color: AppColors.gradientEnd),
               ),
               onPressed: () {
-                // TODO: Implement account deletion logic
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Account deleted successfully',
-                      style: AppTextStyles.bodyTextStyle
-                          .copyWith(color: AppColors.primaryTextColor),
-                    ),
-                    backgroundColor: AppColors.gradientEnd,
-                  ),
-                );
+                _deleteAccount();
               },
             ),
           ],
