@@ -27,7 +27,7 @@ class Upload extends StatefulWidget {
 
 class UploadState extends State<Upload> with TickerProviderStateMixin {
   List<PlatformFile> uploadedFiles = [];
-  double summaryDepth = 1.0;
+  double summaryDepth = 3.0;
   bool isLoading = false;
   late AnimationController _animationController;
   late AnimationController _loadingAnimationController;
@@ -39,6 +39,8 @@ class UploadState extends State<Upload> with TickerProviderStateMixin {
 
   int _currentPdfPage = 1;
   int _totalPdfPages = 0;
+
+  bool _isLoading = true;
 
   static int maxFileSize = 1024 * 1024 * 1024; // 1GB
 
@@ -121,17 +123,17 @@ class UploadState extends State<Upload> with TickerProviderStateMixin {
       allowMultiple: false,
       allowedExtensions: [
         'pdf',
-        'doc',
-        'docx',
+        // 'doc',
+        // 'docx',
         'txt',
-        'rtf',
-        'odt',
+        // 'rtf',
+        // 'odt',
         'html',
         'htm',
-        'pptx',
-        'ppt',
-        'xlsx',
-        'xls',
+        // 'pptx',
+        // 'ppt',
+        // 'xlsx',
+        // 'xls',
         'jpg',
         'jpeg',
         'png',
@@ -172,6 +174,7 @@ class UploadState extends State<Upload> with TickerProviderStateMixin {
         final user = await _database.getUser(firebaseUser.uid);
         setState(() {
           _currentUser = user;
+          _isLoading = false;
         });
       }
     } catch (e) {
@@ -290,24 +293,26 @@ class UploadState extends State<Upload> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: CustomAppBar(
-        user: _currentUser,
-        showBackground: false,
-        title: 'SycX',
-      ),
-      body: Stack(
-        children: [
-          _buildMainContent(),
-          if (isLoading) const Loading(),
-          if (_previewFile != null) _buildPreviewOverlay(),
-        ],
-      ),
-      bottomNavigationBar: const CustomBottomNavBar(
-        currentRoute: '/upload',
-      ),
-    );
+    return _isLoading
+        ? const Loading()
+        : Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: CustomAppBar(
+              user: _currentUser,
+              showBackground: false,
+              title: 'SycX',
+            ),
+            body: Stack(
+              children: [
+                _buildMainContent(),
+                if (isLoading) const Loading(),
+                if (_previewFile != null) _buildPreviewOverlay(),
+              ],
+            ),
+            bottomNavigationBar: const CustomBottomNavBar(
+              currentRoute: '/upload',
+            ),
+          );
   }
 
   Widget _buildPreviewOverlay() {

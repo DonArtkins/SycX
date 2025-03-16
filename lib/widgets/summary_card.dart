@@ -160,6 +160,8 @@ class _SummaryCardState extends State<SummaryCard> {
           child: Container(
             color: Colors.black.withOpacity(0.3),
             padding: const EdgeInsets.all(12),
+            // Fixed height for text container to ensure consistent card appearance
+            height: 100,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,6 +171,9 @@ class _SummaryCardState extends State<SummaryCard> {
                   style: AppTextStyles.subheadingStyle.copyWith(
                     color: AppColors.primaryTextColor,
                   ),
+                  // Add overflow handling with ellipsis
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 4),
                 Text(

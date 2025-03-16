@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:SycX/models/user.dart' as app_user;
 import 'package:SycX/utils/constants.dart';
@@ -27,6 +29,7 @@ class EditProfileState extends State<EditProfile> {
   late TextEditingController _nameController;
   late TextEditingController _usernameController;
   File? _selectedImage;
+  bool _useExistingImage = true;
   final FocusNode _nameFocus = FocusNode();
   final FocusNode _usernameFocus = FocusNode();
   bool _isLoading = false;
@@ -54,57 +57,67 @@ class EditProfileState extends State<EditProfile> {
   void _selectProfilePicture() async {
     final picker = PickImage();
     try {
-      final File? selectedImage =
-          (await picker.pickImageFromGallery()) as File?;
+      final File? selectedImage = await picker.pickImageFromGallery();
       if (selectedImage != null) {
         setState(() {
           _selectedImage = selectedImage;
+          _useExistingImage = false;
         });
       }
     } catch (e) {
       print('Error selecting image: $e');
-      _showErrorToast('Failed to select image. Please try again.');
+      _showToast('Failed to select image. Please try again.');
     }
   }
 
-  void _submitForm() {
-    if (_debounceTimer?.isActive ?? false) return;
+  Future<void> updateProfileWithImage() async {
+    setState(() => _isLoading = true);
+    String profileImage = '';
 
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
-      setState(() => _isLoading = true);
-
-      try {
-        String? base64Image;
-        if (_selectedImage != null) {
-          base64Image =
-              await compute(convertFileToBase64Compute, _selectedImage!);
+    try {
+      // If user selected a new image
+      if (_selectedImage != null) {
+        // Check if the file exists
+        if (await _selectedImage!.exists()) {
+          // Convert to base64 with computation isolation for better performance
+          profileImage = await compute(convertFileToBase64, _selectedImage!);
+        } else {
+          setState(() => _isLoading = false);
+          _showToast('Selected image file not found. Please try again.');
+          return;
         }
-
-        // Create an updated user object with all required fields
-        final updatedUser = app_user.User(
-          id: widget.userData!.id,
-          fullName: _nameController.text,
-          userName: _usernameController.text,
-          email: widget.userData!.email, // Use existing email
-          userProfile: base64Image ?? widget.userData?.profileImage ?? '',
-          createdAt: widget.userData!.createdAt,
-          updatedAt: DateTime.now(), // Update the updated at timestamp
-        );
-
-        // Update user in Firestore
-        await _database.updateUser(updatedUser);
-
-        setState(() => _isLoading = false);
-        Navigator.pop(context, updatedUser);
-      } catch (e) {
-        setState(() => _isLoading = false);
-        print('Error updating profile: $e');
-        _showErrorToast('Failed to update profile. Please try again.');
+      } else if (_useExistingImage && widget.userData?.profileImage != null) {
+        // Keep using the existing image - no change needed
+        profileImage = widget.userData?.profileImage ?? '';
       }
-    });
+
+      // Create updated user object
+      final updatedUser = app_user.User(
+        id: widget.userData!.id,
+        fullName: _nameController.text.trim(),
+        userName: _usernameController.text.trim(),
+        email: widget.userData!.email,
+        userProfile: profileImage, // using renamed variable for clarity
+        createdAt: widget.userData!.createdAt,
+        updatedAt: DateTime.now(),
+        resetToken: widget.userData?.resetToken,
+        resetTokenExpiration: widget.userData?.resetTokenExpiration,
+      );
+
+      // Update in database
+      await _database.updateUser(updatedUser);
+
+      setState(() => _isLoading = false);
+      Navigator.pop(
+          context, updatedUser); // Return updated user to previous screen
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print('Error updating profile: $e');
+      _showToast('Failed to update profile: ${e.toString()}');
+    }
   }
 
-  void _showErrorToast(String message) {
+  void _showToast(String message) {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_LONG,
@@ -112,6 +125,14 @@ class EditProfileState extends State<EditProfile> {
       backgroundColor: AppColors.gradientMiddle,
       textColor: Colors.white,
     );
+  }
+
+  void _submitForm() {
+    if (_debounceTimer?.isActive ?? false) return;
+
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
+      updateProfileWithImage();
+    });
   }
 
   @override
@@ -195,7 +216,14 @@ class EditProfileState extends State<EditProfile> {
             radius: 90,
             backgroundImage: _selectedImage != null
                 ? FileImage(_selectedImage!) as ImageProvider
-                : NetworkImage(widget.userData?.profileImage ?? ''),
+                : (widget.userData?.profileImage != null &&
+                        widget.userData!.profileImage!.isNotEmpty)
+                    ? widget.userData!.profileImage!.startsWith('http')
+                        ? NetworkImage(widget.userData!.profileImage!)
+                        : MemoryImage(
+                                base64Decode(widget.userData!.profileImage!))
+                            as ImageProvider
+                    : null, // No default image
           ),
         ),
       ),

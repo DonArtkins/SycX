@@ -5,11 +5,16 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 class PickImage {
   final ImagePicker _picker = ImagePicker();
 
-  Future<Object?> pickImageFromGallery() async {
+  Future<File?> pickImageFromGallery() async {
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Reduce quality for faster upload
+      );
+
       if (image != null) {
-        return await _compressImage(File(image.path));
+        File file = File(image.path);
+        return await _compressImage(file);
       }
     } catch (e) {
       print('Error picking image from gallery: $e');
@@ -17,11 +22,16 @@ class PickImage {
     return null;
   }
 
-  Future<Object?> pickImageFromCamera() async {
+  Future<File?> pickImageFromCamera() async {
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70, // Reduce quality for faster upload
+      );
+
       if (image != null) {
-        return await _compressImage(File(image.path));
+        File file = File(image.path);
+        return await _compressImage(file);
       }
     } catch (e) {
       print('Error picking image from camera: $e');
@@ -29,7 +39,7 @@ class PickImage {
     return null;
   }
 
-  Future<Object?> _compressImage(File file) async {
+  Future<File> _compressImage(File file) async {
     try {
       final filePath = file.absolute.path;
       final lastIndex = filePath.lastIndexOf(RegExp(r'.jp'));
@@ -42,10 +52,16 @@ class PickImage {
         quality: 70,
       );
 
-      return result;
+      if (result != null) {
+        return File(result.path);
+      } else {
+        // Return original file if compression fails
+        return file;
+      }
     } catch (e) {
       print('Error compressing image: $e');
-      return file; // Return original file if compression fails
+      // Return original file if compression fails
+      return file;
     }
   }
 }

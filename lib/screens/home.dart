@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -67,16 +68,26 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
             setState(() {
               // Sort summaries by createdAt in descending order and take the latest 4
               _summaries = summariesList
-                  .toList()
                   .where((summary) =>
                       !summary.isPinned) // Exclude pinned summaries
                   .toList()
-                ..sort((a, b) => b.createdAt.compareTo(a.createdAt))
-                ..take(4);
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-              // Separate pinned summaries
-              _pinnedSummaries =
-                  summariesList.where((summary) => summary.isPinned).toList();
+              // Take only the first 4 recent summaries
+              if (_summaries.length > 4) {
+                _summaries = _summaries.sublist(0, 4);
+              }
+
+              // Separate pinned summaries and take only 4
+              _pinnedSummaries = summariesList
+                  .where((summary) => summary.isPinned)
+                  .toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+              // Take only the first 4 pinned summaries
+              if (_pinnedSummaries.length > 4) {
+                _pinnedSummaries = _pinnedSummaries.sublist(0, 4);
+              }
             });
           }
         });
@@ -163,22 +174,29 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return _isLoading
         ? const Loading()
-        : Scaffold(
-            extendBodyBehindAppBar: true,
-            appBar: CustomAppBar(
-              user: _currentUser,
-              showBackground: false,
-              title: 'SycX',
-            ),
-            body: RefreshIndicator(
-              onRefresh: _handleRefresh,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: _buildBody(),
+        : PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (bool didPop, bool? result) async {
+              // Exit the app when back button is pressed
+              return SystemNavigator.pop();
+            },
+            child: Scaffold(
+              extendBodyBehindAppBar: true,
+              appBar: CustomAppBar(
+                user: _currentUser,
+                showBackground: false,
+                title: 'SycX',
               ),
-            ),
-            bottomNavigationBar: const CustomBottomNavBar(
-              currentRoute: '/home',
+              body: RefreshIndicator(
+                onRefresh: _handleRefresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: _buildBody(),
+                ),
+              ),
+              bottomNavigationBar: const CustomBottomNavBar(
+                currentRoute: '/home',
+              ),
             ),
           );
   }
